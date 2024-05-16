@@ -4,6 +4,7 @@ import dev.lokeshbisht.GenreService.dto.ApiResponseDto;
 import dev.lokeshbisht.GenreService.dto.GenreRequestDto;
 import dev.lokeshbisht.GenreService.dto.MetadataDto;
 import dev.lokeshbisht.GenreService.entity.Genre;
+import dev.lokeshbisht.GenreService.exceptions.GenreNotFoundException;
 import dev.lokeshbisht.GenreService.repository.GenreRepository;
 import dev.lokeshbisht.GenreService.service.GenreService;
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 public class GenreServiceImpl implements GenreService {
@@ -39,5 +41,20 @@ public class GenreServiceImpl implements GenreService {
         genre.setCreatedBy(genreRequestDto.getCreatedBy());
         genre.setCreatedAt(new Date());
         return mapToApiResponseDto(genreRepository.save(genre), startTime);
+    }
+
+    @Override
+    public ApiResponseDto<Genre> updateGenre(Long genreId, GenreRequestDto genreRequestDto) {
+        long startTime = System.currentTimeMillis();
+        logger.info("Update genre: {}", genreId);
+        Optional<Genre> genre = genreRepository.findById(genreId);
+        if (genre.isEmpty()) {
+            logger.info("Genre with id: {} doesn't exist.", genreId);
+            throw new GenreNotFoundException("Genre not found.");
+        }
+        genre.get().setName(genreRequestDto.getName());
+        genre.get().setUpdatedBy(genreRequestDto.getUpdatedBy());
+        genre.get().setUpdatedAt(new Date());
+        return mapToApiResponseDto(genreRepository.save(genre.get()), startTime);
     }
 }
