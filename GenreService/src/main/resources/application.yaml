@@ -12,7 +12,7 @@ spring:
       ddl-auto: update
       show-sql: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/movies
+    url: ${POSTGRES_HOST}
     username: ${POSTGRES_USERNAME}
     password: ${POSTGRES_PASSWORD}
 server:
