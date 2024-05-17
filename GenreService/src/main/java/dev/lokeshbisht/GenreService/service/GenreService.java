@@ -7,4 +7,5 @@ import dev.lokeshbisht.GenreService.entity.Genre;
 public interface GenreService {
 
     ApiResponseDto<Genre> createGenre(GenreRequestDto genreRequestDto);
+    ApiResponseDto<Genre> updateGenre(Long genreId, GenreRequestDto genreRequestDto);
 }

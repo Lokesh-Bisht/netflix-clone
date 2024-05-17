@@ -21,4 +21,10 @@ public class GenreController {
     public ApiResponseDto<Genre> createGenre(@RequestBody GenreRequestDto genreRequestDto) {
         return genreService.createGenre(genreRequestDto);
     }
+
+    @PutMapping("/genre/{genreId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponseDto<Genre> updateGenre(@PathVariable Long genreId, @RequestBody GenreRequestDto genreRequestDto) {
+        return genreService.updateGenre(genreId, genreRequestDto);
+    }
 }
