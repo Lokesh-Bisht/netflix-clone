@@ -1,0 +1,21 @@
+spring:
+  profiles:
+    active: ${genreServiceAppProfile}
+  application:
+    name: GenreService
+  jpa:
+    properties:
+      hibernate:
+        default_schema: ${POSTGRES_SCHEMA}
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+      show-sql: true
+  datasource:
+    url: ${POSTGRES_HOST}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+server:
+  servlet:
+    context-path: /genre_service
+  port: ${genreServiceAppPort}
