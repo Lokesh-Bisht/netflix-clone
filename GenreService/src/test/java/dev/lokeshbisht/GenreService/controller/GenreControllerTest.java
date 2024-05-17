@@ -4,6 +4,7 @@ import dev.lokeshbisht.GenreService.dto.ApiResponseDto;
 import dev.lokeshbisht.GenreService.dto.GenreRequestDto;
 import dev.lokeshbisht.GenreService.dto.MetadataDto;
 import dev.lokeshbisht.GenreService.entity.Genre;
+import dev.lokeshbisht.GenreService.exceptions.GenreNotFoundException;
 import dev.lokeshbisht.GenreService.service.GenreService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +51,38 @@ class GenreControllerTest {
             .andExpect(MockMvcResultMatchers.status().isCreated())
             .andExpect(MockMvcResultMatchers.jsonPath("data.id").value(1))
             .andExpect(MockMvcResultMatchers.jsonPath("data.name").value("Fantasy"))
+            .andReturn();
+    }
+
+    @Test
+    void updateGenreTest() throws Exception {
+        Genre genre = new Genre();
+        genre.setId(2L);
+        genre.setName("Comedy");
+        GenreRequestDto genreRequestDto = new GenreRequestDto();
+        genreRequestDto.setName("Comedy");
+        genreRequestDto.setUpdatedBy("som");
+        when(genreService.updateGenre(2L, genreRequestDto)).thenReturn(new ApiResponseDto<>(genre, new MetadataDto()));
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.put("/v1/genre/2")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"name\": \"Comedy\", \"updated_by\": \"som\"}"))
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("data.name").value("Comedy"))
+            .andReturn();
+    }
+
+    @Test
+    void updateGenreNotFoundTest() throws Exception {
+        GenreRequestDto genreRequestDto = new GenreRequestDto();
+        genreRequestDto.setName("Comedy");
+        genreRequestDto.setUpdatedBy("som");
+        when(genreService.updateGenre(4L, genreRequestDto)).thenThrow(new GenreNotFoundException("Genre not found."));
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.put("/v1/genre/4")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"name\": \"Comedy\", \"updated_by\": \"som\"}"))
+            .andExpect(MockMvcResultMatchers.status().isNotFound())
+            .andExpect(MockMvcResultMatchers.jsonPath("error_code").value("GENRE_NOT_FOUND"))
+            .andExpect(MockMvcResultMatchers.jsonPath("error_message").value("Genre not found."))
             .andReturn();
     }
 }
