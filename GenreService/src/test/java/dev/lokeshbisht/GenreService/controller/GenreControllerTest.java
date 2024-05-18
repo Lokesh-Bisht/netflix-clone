@@ -22,6 +22,7 @@ import dev.lokeshbisht.GenreService.exceptions.GenreNotFoundException;
 import dev.lokeshbisht.GenreService.service.GenreService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -91,9 +92,36 @@ class GenreControllerTest {
         genreRequestDto.setName("Comedy");
         genreRequestDto.setUpdatedBy("som");
         when(genreService.updateGenre(4L, genreRequestDto)).thenThrow(new GenreNotFoundException("Genre not found."));
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.put("/v1/genre/4")
+        mockMvc.perform(MockMvcRequestBuilders.put("/v1/genre/4")
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"name\": \"Comedy\", \"updated_by\": \"som\"}"))
+            .andExpect(MockMvcResultMatchers.status().isNotFound())
+            .andExpect(MockMvcResultMatchers.jsonPath("error_code").value("GENRE_NOT_FOUND"))
+            .andExpect(MockMvcResultMatchers.jsonPath("error_message").value("Genre not found."))
+            .andReturn();
+    }
+
+    @Test
+    void getGenreTest() throws Exception {
+        Genre genre = Genre.builder()
+            .id(34532L)
+            .name("Thriller")
+            .createdBy("Aditya")
+            .build();
+        when(genreService.getGenreById(34532L)).thenReturn(new ApiResponseDto<>(genre, new MetadataDto("", "OK", null)));
+        mockMvc.perform(MockMvcRequestBuilders.get("/v1/genre/34532"))
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("data.id").value(34532))
+            .andExpect(MockMvcResultMatchers.jsonPath("data.name").value("Thriller"))
+            .andExpect(MockMvcResultMatchers.jsonPath("data.createdBy").value("Aditya"))
+            .andExpect(MockMvcResultMatchers.jsonPath("metadata.message").value("OK"))
+            .andReturn();
+    }
+
+    @Test
+    void getInvalidGenre() throws Exception {
+        when(genreService.getGenreById(234L)).thenThrow(new GenreNotFoundException("Genre not found."));
+        mockMvc.perform(MockMvcRequestBuilders.get("/v1/genre/234"))
             .andExpect(MockMvcResultMatchers.status().isNotFound())
             .andExpect(MockMvcResultMatchers.jsonPath("error_code").value("GENRE_NOT_FOUND"))
             .andExpect(MockMvcResultMatchers.jsonPath("error_message").value("Genre not found."))

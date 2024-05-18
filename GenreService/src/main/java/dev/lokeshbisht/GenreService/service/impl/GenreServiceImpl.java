@@ -63,12 +63,24 @@ public class GenreServiceImpl implements GenreService {
         logger.info("Update genre: {}", genreId);
         Optional<Genre> genre = genreRepository.findById(genreId);
         if (genre.isEmpty()) {
-            logger.info("Genre with id: {} doesn't exist.", genreId);
+            logger.error("Genre with id: {} doesn't exist.", genreId);
             throw new GenreNotFoundException("Genre not found.");
         }
         genre.get().setName(genreRequestDto.getName());
         genre.get().setUpdatedBy(genreRequestDto.getUpdatedBy());
         genre.get().setUpdatedAt(new Date());
         return mapToApiResponseDto(genreRepository.save(genre.get()), startTime);
+    }
+
+    @Override
+    public ApiResponseDto<Genre> getGenreById(Long genreId) {
+        long startTime = System.currentTimeMillis();
+        logger.info("Fetch genre with genreId: {}", genreId);
+        Optional<Genre> genre = genreRepository.findById(genreId);
+        if (genre.isEmpty()) {
+            logger.error("Genre with id: {} doesn't exist.", genreId);
+            throw new GenreNotFoundException("Genre not found.");
+        }
+        return mapToApiResponseDto(genre.get(), startTime);
     }
 }

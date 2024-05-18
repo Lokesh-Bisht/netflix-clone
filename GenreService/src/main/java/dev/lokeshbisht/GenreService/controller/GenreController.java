@@ -41,4 +41,9 @@ public class GenreController {
     public ApiResponseDto<Genre> updateGenre(@PathVariable Long genreId, @RequestBody GenreRequestDto genreRequestDto) {
         return genreService.updateGenre(genreId, genreRequestDto);
     }
+
+    @GetMapping("/genre/{genreId}")
+    public ApiResponseDto<Genre> getGenreById(@PathVariable Long genreId) {
+        return genreService.getGenreById(genreId);
+    }
 }
