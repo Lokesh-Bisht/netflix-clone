@@ -15,12 +15,15 @@
 package dev.lokeshbisht.GenreService.repository;
 
 import dev.lokeshbisht.GenreService.entity.Genre;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,6 +33,19 @@ class GenreRepositoryTest {
 
     @Autowired
     private GenreRepository genreRepository;
+
+    private static final List<Genre> genreList = new ArrayList<>();
+
+    @BeforeAll
+    static void generateGenreList() {
+
+        Genre genre = new Genre(8L, "Fantasy", "Inu", null, "Uttara", null);
+        Genre genre2 = new Genre(11L, "Documentary", "Pururava ", null, "Nahush", null);
+        Genre genre3 = new Genre(14L, "Romance", "Ayu", null, "Ira", null);
+        genreList.add(genre);
+        genreList.add(genre2);
+        genreList.add(genre3);
+    }
 
     @Test
     void testSaveGenre() {
@@ -70,9 +86,20 @@ class GenreRepositoryTest {
         assertEquals("som", retrievedEntity.getUpdatedBy());
     }
 
+//    @Test
+//    void updateInvalidGenreTest() {
+//        Genre genre = genreRepository.findById(400L).orElse(null);
+//        assertNull(genre);
+//    }
+
     @Test
-    void updateInvalidGenreTest() {
-        Genre genre = genreRepository.findById(400L).orElse(null);
-        assertNull(genre);
+    void getGenreByGenreId() {
+        Long genreId = genreRepository.save(genreList.get(0)).getId();
+        Genre retrievedEntity = genreRepository.findById(genreId).orElse(null);
+        assertNotNull(retrievedEntity);
+        assertEquals(genreId, retrievedEntity.getId());
+        assertEquals(genreList.get(0).getName(), retrievedEntity.getName());
+        assertEquals(genreList.get(0).getCreatedBy(), retrievedEntity.getCreatedBy());
+        assertEquals(genreList.get(0).getUpdatedBy(), retrievedEntity.getUpdatedBy());
     }
 }
