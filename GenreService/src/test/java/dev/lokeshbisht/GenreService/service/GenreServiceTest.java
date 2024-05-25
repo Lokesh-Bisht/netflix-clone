@@ -20,10 +20,10 @@ import dev.lokeshbisht.GenreService.entity.Genre;
 import dev.lokeshbisht.GenreService.exceptions.GenreNotFoundException;
 import dev.lokeshbisht.GenreService.repository.GenreRepository;
 import dev.lokeshbisht.GenreService.service.impl.GenreServiceImpl;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.function.Executable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -140,5 +141,23 @@ class GenreServiceTest {
         }
         assertThrows(GenreNotFoundException.class, () -> genreService.getGenreById(545L));
         assertEquals("Genre not found.", errorMessage);
+    }
+
+    @Test
+    void testGetAllGenres() {
+        when(genreRepository.findAll()).thenReturn(genreList);
+        ApiResponseDto<List<Genre>> result = genreService.getAllGenres();
+        List<Genre> data = result.getData();
+
+        assertEquals(genreList.size(), data.size());
+
+        assertThat(List.of(genreList.get(0).getName(), genreList.get(1).getName(), genreList.get(2).getName()),
+            Matchers.containsInAnyOrder(data.get(0).getName(), data.get(1).getName(), data.get(2).getName()));
+
+        assertThat(List.of(genreList.get(0).getCreatedBy(), genreList.get(1).getCreatedBy(), genreList.get(2).getCreatedBy()),
+            Matchers.containsInAnyOrder(data.get(0).getCreatedBy(), data.get(1).getCreatedBy(), data.get(2).getCreatedBy()));
+
+        assertThat(List.of(genreList.get(0).getUpdatedBy(), genreList.get(1).getUpdatedBy(), genreList.get(2).getUpdatedBy()),
+            Matchers.containsInAnyOrder(data.get(0).getUpdatedBy(), data.get(1).getUpdatedBy(), data.get(2).getUpdatedBy()));
     }
 }
