@@ -20,9 +20,9 @@ import dev.lokeshbisht.GenreService.dto.MetadataDto;
 import dev.lokeshbisht.GenreService.entity.Genre;
 import dev.lokeshbisht.GenreService.exceptions.GenreNotFoundException;
 import dev.lokeshbisht.GenreService.service.GenreService;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -33,7 +33,9 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import static org.mockito.Mockito.when;
 
@@ -125,6 +127,24 @@ class GenreControllerTest {
             .andExpect(MockMvcResultMatchers.status().isNotFound())
             .andExpect(MockMvcResultMatchers.jsonPath("error_code").value("GENRE_NOT_FOUND"))
             .andExpect(MockMvcResultMatchers.jsonPath("error_message").value("Genre not found."))
+            .andReturn();
+    }
+
+    @Test
+    void getAllGenres() throws Exception {
+        List<Genre> genreList = new ArrayList<>();
+        Genre genre = new Genre(8L, "Fantasy", "Inu", null, "Uttara", null);
+        Genre genre2 = new Genre(11L, "Documentary", "Pururava ", null, "Nahush", null);
+        Genre genre3 = new Genre(14L, "Romance", "Ayu", null, "Ira", null);
+        genreList.add(genre);
+        genreList.add(genre2);
+        genreList.add(genre3);
+
+        when(genreService.getAllGenres()).thenReturn(new ApiResponseDto<>(genreList, new MetadataDto("", "OK", null)));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/v1/genre/all"))
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data.length()").value(genreList.size()))
             .andReturn();
     }
 }

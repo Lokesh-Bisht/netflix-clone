@@ -31,7 +31,8 @@ import static dev.lokeshbisht.GenreService.constants.JsonConstants.ISO8601;
 public class Genre {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "genre_sequence")
+    @SequenceGenerator(name = "genre_sequence", sequenceName = "genre_sequence", allocationSize = 1)
     private Long id;
 
     @Column(nullable = false)
