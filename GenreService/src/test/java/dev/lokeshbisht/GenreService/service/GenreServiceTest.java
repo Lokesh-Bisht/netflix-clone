@@ -20,6 +20,8 @@ import dev.lokeshbisht.GenreService.entity.Genre;
 import dev.lokeshbisht.GenreService.exceptions.GenreNotFoundException;
 import dev.lokeshbisht.GenreService.repository.GenreRepository;
 import dev.lokeshbisht.GenreService.service.impl.GenreServiceImpl;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,12 +29,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(MockitoExtension.class)
 class GenreServiceTest {
@@ -42,6 +46,19 @@ class GenreServiceTest {
 
     @InjectMocks
     private GenreServiceImpl genreService;
+
+    private static final List<Genre> genreList = new ArrayList<>();
+
+    @BeforeAll
+    static void generateGenreList() {
+
+        Genre genre = new Genre(8L, "Fantasy", "Inu", null, "Uttara", null);
+        Genre genre2 = new Genre(11L, "Documentary", "Pururava ", null, "Nahush", null);
+        Genre genre3 = new Genre(14L, "Romance", "Ayu", null, "Ira", null);
+        genreList.add(genre);
+        genreList.add(genre2);
+        genreList.add(genre3);
+    }
 
     @Test
     void createGenreTestFromService() {
@@ -86,10 +103,61 @@ class GenreServiceTest {
 
         String errorMessage = "";
         try {
-            ApiResponseDto<Genre> ex = genreService.updateGenre(545L, new GenreRequestDto());
+            genreService.updateGenre(545L, new GenreRequestDto());
         } catch (Exception ex) {
             errorMessage = ex.getMessage();
         }
+        assertThrows(GenreNotFoundException.class, () -> genreService.updateGenre(545L, new GenreRequestDto()));
         assertEquals("Genre not found.", errorMessage);
+    }
+
+    @Test
+    void testGetGenre() {
+        Genre genre = genreList.get(1);
+        when(genreRepository.findById(genre.getId())).thenReturn(Optional.of(genre));
+
+        ApiResponseDto<Genre> result = genreService.getGenreById(genre.getId());
+        Genre retrievedEntity = result.getData();
+
+        assertNotNull(retrievedEntity);
+        assertEquals(genre.getId(), retrievedEntity.getId());
+        assertEquals(genreList.get(1).getName(), retrievedEntity.getName());
+        assertEquals(genreList.get(1).getCreatedBy(), retrievedEntity.getCreatedBy());
+        assertEquals(genreList.get(1).getUpdatedBy(), retrievedEntity.getUpdatedBy());
+
+        assertNotNull(result.getMetadataDto());
+        assertEquals("OK", result.getMetadataDto().getMessage());
+    }
+
+    @Test
+    void testGetInvalidGenre() {
+        when(genreRepository.findById(545L)).thenThrow(new GenreNotFoundException("Genre not found."));
+
+        String errorMessage = "";
+        try {
+            genreService.getGenreById(545L);
+        } catch (Exception ex) {
+            errorMessage = ex.getMessage();
+        }
+        assertThrows(GenreNotFoundException.class, () -> genreService.getGenreById(545L));
+        assertEquals("Genre not found.", errorMessage);
+    }
+
+    @Test
+    void testGetAllGenres() {
+        when(genreRepository.findAll()).thenReturn(genreList);
+        ApiResponseDto<List<Genre>> result = genreService.getAllGenres();
+        List<Genre> data = result.getData();
+
+        assertEquals(genreList.size(), data.size());
+
+        assertThat(List.of(genreList.get(0).getName(), genreList.get(1).getName(), genreList.get(2).getName()),
+            Matchers.containsInAnyOrder(data.get(0).getName(), data.get(1).getName(), data.get(2).getName()));
+
+        assertThat(List.of(genreList.get(0).getCreatedBy(), genreList.get(1).getCreatedBy(), genreList.get(2).getCreatedBy()),
+            Matchers.containsInAnyOrder(data.get(0).getCreatedBy(), data.get(1).getCreatedBy(), data.get(2).getCreatedBy()));
+
+        assertThat(List.of(genreList.get(0).getUpdatedBy(), genreList.get(1).getUpdatedBy(), genreList.get(2).getUpdatedBy()),
+            Matchers.containsInAnyOrder(data.get(0).getUpdatedBy(), data.get(1).getUpdatedBy(), data.get(2).getUpdatedBy()));
     }
 }
