@@ -14,6 +14,7 @@
 
 package dev.lokeshbisht.GenreService.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import dev.lokeshbisht.GenreService.enums.ErrorCode;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorResponseDto {
 
     @JsonProperty("error_code")
