@@ -20,7 +20,6 @@ import dev.lokeshbisht.GenreService.dto.MetadataDto;
 import dev.lokeshbisht.GenreService.entity.Genre;
 import dev.lokeshbisht.GenreService.exceptions.GenreNotFoundException;
 import dev.lokeshbisht.GenreService.service.GenreService;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -50,7 +49,7 @@ class GenreControllerTest {
     private GenreService genreService;
 
     @Test
-    void createGenreTest() throws Exception {
+    void testCreateGenre() throws Exception {
         Genre genre = new Genre();
         genre.setId(1L);
         genre.setName("Fantasy");
@@ -72,7 +71,7 @@ class GenreControllerTest {
     }
 
     @Test
-    void updateGenreTest() throws Exception {
+    void testUpdateGenre() throws Exception {
         Genre genre = new Genre();
         genre.setId(2L);
         genre.setName("Comedy");
@@ -89,7 +88,7 @@ class GenreControllerTest {
     }
 
     @Test
-    void updateGenreNotFoundTest() throws Exception {
+    void testUpdateGenreNotFound() throws Exception {
         GenreRequestDto genreRequestDto = new GenreRequestDto();
         genreRequestDto.setName("Comedy");
         genreRequestDto.setUpdatedBy("som");
@@ -104,7 +103,7 @@ class GenreControllerTest {
     }
 
     @Test
-    void getGenreTest() throws Exception {
+    void testGetGenre() throws Exception {
         Genre genre = Genre.builder()
             .id(34532L)
             .name("Thriller")
@@ -121,7 +120,7 @@ class GenreControllerTest {
     }
 
     @Test
-    void getInvalidGenre() throws Exception {
+    void testGetInvalidGenre() throws Exception {
         when(genreService.getGenreById(234L)).thenThrow(new GenreNotFoundException("Genre not found."));
         mockMvc.perform(MockMvcRequestBuilders.get("/v1/genre/234"))
             .andExpect(MockMvcResultMatchers.status().isNotFound())
@@ -131,7 +130,7 @@ class GenreControllerTest {
     }
 
     @Test
-    void getAllGenres() throws Exception {
+    void testGetAllGenres() throws Exception {
         List<Genre> genreList = new ArrayList<>();
         Genre genre = new Genre(8L, "Fantasy", "Inu", null, "Uttara", null);
         Genre genre2 = new Genre(11L, "Documentary", "Pururava ", null, "Nahush", null);
@@ -145,6 +144,15 @@ class GenreControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/v1/genre/all"))
             .andExpect(MockMvcResultMatchers.status().isOk())
             .andExpect(MockMvcResultMatchers.jsonPath("$.data.length()").value(genreList.size()))
+            .andReturn();
+    }
+
+    @Test
+    void testInvalidUriRequest() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/v1/test"))
+            .andExpect(MockMvcResultMatchers.status().isNotFound())
+            .andExpect(MockMvcResultMatchers.jsonPath("error_code").value("INVALID_RESOURCE"))
+            .andExpect(MockMvcResultMatchers.jsonPath("error_message").value("This page doesn't exist."))
             .andReturn();
     }
 }
