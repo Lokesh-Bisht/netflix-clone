@@ -32,7 +32,9 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import static org.mockito.Mockito.when;
 
@@ -47,7 +49,7 @@ class GenreControllerTest {
     private GenreService genreService;
 
     @Test
-    void createGenreTest() throws Exception {
+    void testCreateGenre() throws Exception {
         Genre genre = new Genre();
         genre.setId(1L);
         genre.setName("Fantasy");
@@ -69,7 +71,7 @@ class GenreControllerTest {
     }
 
     @Test
-    void updateGenreTest() throws Exception {
+    void testUpdateGenre() throws Exception {
         Genre genre = new Genre();
         genre.setId(2L);
         genre.setName("Comedy");
@@ -86,17 +88,71 @@ class GenreControllerTest {
     }
 
     @Test
-    void updateGenreNotFoundTest() throws Exception {
+    void testUpdateGenreNotFound() throws Exception {
         GenreRequestDto genreRequestDto = new GenreRequestDto();
         genreRequestDto.setName("Comedy");
         genreRequestDto.setUpdatedBy("som");
         when(genreService.updateGenre(4L, genreRequestDto)).thenThrow(new GenreNotFoundException("Genre not found."));
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.put("/v1/genre/4")
+        mockMvc.perform(MockMvcRequestBuilders.put("/v1/genre/4")
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"name\": \"Comedy\", \"updated_by\": \"som\"}"))
             .andExpect(MockMvcResultMatchers.status().isNotFound())
             .andExpect(MockMvcResultMatchers.jsonPath("error_code").value("GENRE_NOT_FOUND"))
             .andExpect(MockMvcResultMatchers.jsonPath("error_message").value("Genre not found."))
+            .andReturn();
+    }
+
+    @Test
+    void testGetGenre() throws Exception {
+        Genre genre = Genre.builder()
+            .id(34532L)
+            .name("Thriller")
+            .createdBy("Aditya")
+            .build();
+        when(genreService.getGenreById(34532L)).thenReturn(new ApiResponseDto<>(genre, new MetadataDto("", "OK", null)));
+        mockMvc.perform(MockMvcRequestBuilders.get("/v1/genre/34532"))
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("data.id").value(34532))
+            .andExpect(MockMvcResultMatchers.jsonPath("data.name").value("Thriller"))
+            .andExpect(MockMvcResultMatchers.jsonPath("data.createdBy").value("Aditya"))
+            .andExpect(MockMvcResultMatchers.jsonPath("metadata.message").value("OK"))
+            .andReturn();
+    }
+
+    @Test
+    void testGetInvalidGenre() throws Exception {
+        when(genreService.getGenreById(234L)).thenThrow(new GenreNotFoundException("Genre not found."));
+        mockMvc.perform(MockMvcRequestBuilders.get("/v1/genre/234"))
+            .andExpect(MockMvcResultMatchers.status().isNotFound())
+            .andExpect(MockMvcResultMatchers.jsonPath("error_code").value("GENRE_NOT_FOUND"))
+            .andExpect(MockMvcResultMatchers.jsonPath("error_message").value("Genre not found."))
+            .andReturn();
+    }
+
+    @Test
+    void testGetAllGenres() throws Exception {
+        List<Genre> genreList = new ArrayList<>();
+        Genre genre = new Genre(8L, "Fantasy", "Inu", null, "Uttara", null);
+        Genre genre2 = new Genre(11L, "Documentary", "Pururava ", null, "Nahush", null);
+        Genre genre3 = new Genre(14L, "Romance", "Ayu", null, "Ira", null);
+        genreList.add(genre);
+        genreList.add(genre2);
+        genreList.add(genre3);
+
+        when(genreService.getAllGenres()).thenReturn(new ApiResponseDto<>(genreList, new MetadataDto("", "OK", null)));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/v1/genre/all"))
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.data.length()").value(genreList.size()))
+            .andReturn();
+    }
+
+    @Test
+    void testInvalidUriRequest() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/v1/test"))
+            .andExpect(MockMvcResultMatchers.status().isNotFound())
+            .andExpect(MockMvcResultMatchers.jsonPath("error_code").value("INVALID_RESOURCE"))
+            .andExpect(MockMvcResultMatchers.jsonPath("error_message").value("This page doesn't exist."))
             .andReturn();
     }
 }

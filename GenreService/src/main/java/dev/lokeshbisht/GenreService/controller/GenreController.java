@@ -22,6 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @CrossOrigin
 @RestController
 @RequestMapping("/v1")
@@ -40,5 +42,15 @@ public class GenreController {
     @ResponseStatus(HttpStatus.OK)
     public ApiResponseDto<Genre> updateGenre(@PathVariable Long genreId, @RequestBody GenreRequestDto genreRequestDto) {
         return genreService.updateGenre(genreId, genreRequestDto);
+    }
+
+    @GetMapping("/genre/{genreId}")
+    public ApiResponseDto<Genre> getGenreById(@PathVariable Long genreId) {
+        return genreService.getGenreById(genreId);
+    }
+
+    @GetMapping("/genre/all")
+    public ApiResponseDto<List<Genre>> getAllGenres() {
+        return genreService.getAllGenres();
     }
 }

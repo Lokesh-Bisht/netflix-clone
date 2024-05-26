@@ -17,13 +17,18 @@ package dev.lokeshbisht.GenreService.controller;
 import dev.lokeshbisht.GenreService.enums.ErrorCode;
 import dev.lokeshbisht.GenreService.dto.ErrorResponseDto;
 import dev.lokeshbisht.GenreService.exceptions.GenreNotFoundException;
+import dev.lokeshbisht.GenreService.exceptions.InvalidResourceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.UUID;
+
+import static dev.lokeshbisht.GenreService.constants.Errors.INVALID_RESOURCE_MESSAGE;
 
 @Slf4j
 @RestControllerAdvice
@@ -32,6 +37,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(GenreNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handleGenreNotFoundException(GenreNotFoundException ex) {
         ErrorResponseDto errorResponseDto = new ErrorResponseDto(ErrorCode.GENRE_NOT_FOUND, ex.getMessage());
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleNoResourceFoundException(NoResourceFoundException ex) {
+        log.error("NoResourceFoundException: {}", ex.getMessage());
+        ErrorResponseDto errorResponseDto = new ErrorResponseDto(ErrorCode.INVALID_RESOURCE, INVALID_RESOURCE_MESSAGE);
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponseDto> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
+        log.error("HttpRequestMethodNotSupportedException: {}", ex.getMessage());
+        ErrorResponseDto errorResponseDto = new ErrorResponseDto(ErrorCode.INVALID_RESOURCE, INVALID_RESOURCE_MESSAGE);
         return new ResponseEntity<>(errorResponseDto, HttpStatus.NOT_FOUND);
     }
 
